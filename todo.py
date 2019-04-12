@@ -60,14 +60,21 @@ def list_todos(progress, project, order):
     con = db_connect()
     cur = con.cursor()
 
+    # find the order in dictionary
+    def filter_order(a): return {
+        "ASC": "ASC",
+        "DESC": "DESC"
+    }[a]
+
+    filtered_order = filter_order(order)
     # execute
     print_sql = f"""
         SELECT * FROM todos
-        WHERE progress = "{progress}"
-            AND project_id = {project}
-        ORDER BY due_date {order}
+        WHERE progress = ?
+            AND project_id = ?
+        ORDER BY due_date {filtered_order}
     """
-    cur.execute(print_sql)
+    cur.execute(print_sql, (progress, project))
 
     # Format the results to look like a table
     formatted_result = [f"{id:<5}{text:<25}{due_date:<15}{project_id:^10}{progress:^18}{user_id:>7}" for id, text,
@@ -327,6 +334,9 @@ def main():
 
     elif x == "who_to_fire":
         who_to_fire()
+    elif not x:
+        print('Dont left your input empty, please type in a command!')
+        home()
     else:
         print('Incorrect command! Please try again')
         home()
